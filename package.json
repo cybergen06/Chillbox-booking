@@ -1,5 +1,16 @@
 {
+  "name": "chillbox-booking",
+  "version": "1.0.0",
+  "description": "Mobile fridge rental booking system",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "dependencies": {
-    "express": "^5.2.1"
-  }
+    "express": "^4.18.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
