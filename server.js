@@ -16,7 +16,7 @@ mongoose.connect(MONGO_URI, { dbName: 'chillbox' })
 // ----- EMAIL CONFIGURATION -----
 // Replace these with your Gmail details
 const EMAIL_USER = 'nthavela202@gmail.com';
-const EMAIL_PASS = 'ymgj qddp iifr cdjs'; // NOT your regular Gmail password!
+const EMAIL_PASS = 'ymgjqddpiifrcdjs'; // NOT your regular Gmail password!
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
