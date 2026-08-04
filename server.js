@@ -137,6 +137,17 @@ app.put('/api/bookings/:id', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+// 4. Delete a booking
+app.delete('/api/bookings/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const booking = await Booking.findOneAndDelete({ id: id });
+        if (!booking) return res.status(404).json({ error: 'Booking not found' });
+        res.json({ message: 'Booking deleted!', booking });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 app.listen(PORT, () => {
     console.log(`❄️ ChillBox server running at http://localhost:${PORT}`);
     console.log(`📦 Bookings saved to MongoDB Atlas!`);
