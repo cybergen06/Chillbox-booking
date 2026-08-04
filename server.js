@@ -7,7 +7,7 @@ app.use(express.static('public'));
 
 // ----- MONGODB CONNECTION -----
 // PASTE YOUR CONNECTION STRING HERE (replace <password> with your real password)
-const MONGO_URI = 'mongodb+srv://admin:YOUR_PASSWORD_HERE@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority';
+const MONGO_URI = 'mongodb+srv://admin:nthavela202_db_user@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority';
 
 mongoose.connect(MONGO_URI, { dbName: 'chillbox' })
     .then(() => console.log('✅ Connected to MongoDB Atlas!'))
