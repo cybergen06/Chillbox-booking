@@ -1,89 +1,104 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
+const mongoose = require('mongoose');
 const app = express();
 
-// Middleware
 app.use(express.json());
 app.use(express.static('public'));
 
-// Path to our "database"
-const BOOKINGS_FILE = path.join(__dirname, 'bookings.json');
+// ----- MONGODB CONNECTION -----
+// PASTE YOUR CONNECTION STRING HERE (replace <password> with your real password)
+const MONGO_URI = 'mongodb+srv://admin:YOUR_PASSWORD_HERE@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority';
 
-// Helper to read/write bookings
-function readBookings() {
-    if (!fs.existsSync(BOOKINGS_FILE)) return [];
-    const data = fs.readFileSync(BOOKINGS_FILE, 'utf-8');
-    return JSON.parse(data);
-}
+mongoose.connect(MONGO_URI, { dbName: 'chillbox' })
+    .then(() => console.log('✅ Connected to MongoDB Atlas!'))
+    .catch(err => console.error('❌ MongoDB connection error:', err));
 
-function writeBookings(bookings) {
-    fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookings, null, 2));
-}
+// ----- MONGODB SCHEMA & MODEL -----
+const bookingSchema = new mongoose.Schema({
+    id: String,
+    name: String,
+    phone: String,
+    address: String,
+    date: String,
+    time: String,
+    service: String,
+    duration: String,
+    notes: String,
+    createdAt: String,
+    status: { type: String, default: 'pending' }
+});
+
+const Booking = mongoose.model('Booking', bookingSchema);
 
 // ----- API ROUTES -----
 
-// 1. Get all bookings (for the dashboard)
-app.get('/api/bookings', (req, res) => {
-    const bookings = readBookings();
-    res.json(bookings);
+// 1. Get all bookings
+app.get('/api/bookings', async (req, res) => {
+    try {
+        const bookings = await Booking.find().sort({ createdAt: -1 });
+        res.json(bookings);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // 2. Create a new booking
-app.post('/api/bookings', (req, res) => {
+app.post('/api/bookings', async (req, res) => {
     const { name, phone, address, date, time, service, duration, notes } = req.body;
 
-    // Basic validation
     if (!name || !phone || !date || !time || !service) {
-        return res.status(400).json({ error: 'Missing required fields (name, phone, date, time, service).' });
+        return res.status(400).json({ error: 'Missing required fields.' });
     }
 
-    const bookings = readBookings();
+    try {
+        // Check for double-booking
+        const conflict = await Booking.findOne({ date, time });
+        if (conflict) {
+            return res.status(409).json({ error: 'Time slot already booked.' });
+        }
 
-    // Check for double-booking (simple: same date & time)
-    const conflict = bookings.find(b => b.date === date && b.time === time);
-    if (conflict) {
-        return res.status(409).json({ error: 'This time slot is already booked. Please choose another.' });
+        const newBooking = new Booking({
+            id: Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
+            name,
+            phone,
+            address: address || 'Not specified',
+            date,
+            time,
+            service,
+            duration: duration || '1 day',
+            notes: notes || '',
+            createdAt: new Date().toISOString(),
+            status: 'pending'
+        });
+
+        await newBooking.save();
+        console.log(`📩 NEW BOOKING: ${name} - ${service} on ${date} at ${time}`);
+        res.status(201).json({ message: 'Booking created!', booking: newBooking });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-
-    const newBooking = {
-        id: Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
-        name,
-        phone,
-        address: address || 'Not specified',
-        date,
-        time,
-        service,
-        duration: duration || '1 day',
-        notes: notes || '',
-        createdAt: new Date().toISOString(),
-        status: 'pending', // pending | confirmed | completed
-    };
-
-    bookings.push(newBooking);
-    writeBookings(bookings);
-
-    // (Optional) Simulate email notification - in production, use Nodemailer or a webhook.
-    console.log(`📩 NEW BOOKING: ${name} - ${service} on ${date} at ${time}`);
-
-    res.status(201).json({ message: 'Booking created!', booking: newBooking });
 });
 
-// 3. (Optional) Update status – for you to mark as "confirmed" later
-app.put('/api/bookings/:id', (req, res) => {
+// 3. Update status
+app.put('/api/bookings/:id', async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
-    const bookings = readBookings();
-    const index = bookings.findIndex(b => b.id === id);
-    if (index === -1) return res.status(404).json({ error: 'Booking not found' });
-    bookings[index].status = status;
-    writeBookings(bookings);
-    res.json({ message: 'Status updated', booking: bookings[index] });
+    try {
+        const booking = await Booking.findOneAndUpdate(
+            { id: id },
+            { status: status },
+            { new: true }
+        );
+        if (!booking) return res.status(404).json({ error: 'Booking not found' });
+        res.json({ message: 'Status updated', booking });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-// Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`❄️ ChillBox server running at http://localhost:${PORT}`);
-    console.log(`📦 Bookings saved to ${BOOKINGS_FILE}`);
+    console.log(`❄️ ChillBox server running at http://localhost:3000`);
+    console.log(`📦 Bookings saved to MongoDB Atlas!`);
 });
