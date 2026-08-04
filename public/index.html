@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChillBox – Mobile Fridge Rentals</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f0f9ff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .app {
+            max-width: 1100px;
+            width: 100%;
+            background: white;
+            border-radius: 2.5rem;
+            box-shadow: 0 30px 80px -20px rgba(14, 165, 233, 0.25);
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 0;
+        }
+
+        /* ---- LEFT: HERO / INFO ---- */
+        .hero-panel {
+            background: linear-gradient(145deg, #0284c7, #0ea5e9);
+            padding: 3rem 2.5rem;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .hero-panel .logo {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+        .hero-panel .logo span {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.1rem 0.6rem;
+            border-radius: 12px;
+        }
+        .hero-panel .tagline {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+
+        .hero-panel .benefits {
+            margin: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .hero-panel .benefits li {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-weight: 500;
+            list-style: none;
+            font-size: 1rem;
+        }
+        .hero-panel .benefits li::before {
+            content: '❄️';
+            font-size: 1.4rem;
+        }
+
+        .hero-panel .footer-note {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        /* ---- RIGHT: BOOKING FORM ---- */
+        .form-panel {
+            padding: 2.5rem;
+            background: #ffffff;
+        }
+
+        .form-panel h2 {
+            font-size: 1.6rem;
+            color: #0f172a;
+            font-weight: 800;
+            margin-bottom: 0.3rem;
+        }
+        .form-panel .sub {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #334155;
+            margin-bottom: 0.3rem;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            background: #f8fafc;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+            background: white;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        .row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn-book {
+            width: 100%;
+            padding: 1rem;
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-book:hover {
+            background: #0284c7;
+            transform: scale(1.01);
+        }
+
+        /* ---- DASHBOARD (My Bookings) ---- */
+        .dashboard {
+            margin-top: 2.5rem;
+            border-top: 2px solid #f1f5f9;
+            padding-top: 1.5rem;
+        }
+        .dashboard h3 {
+            font-size: 1.1rem;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .booking-list {
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .booking-item {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 0.8rem 1rem;
+            border-left: 4px solid #0ea5e9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+        }
+        .booking-item .info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1.2rem;
+        }
+        .booking-item .info strong {
+            color: #0f172a;
+        }
+        .booking-item .status {
+            background: #f1f5f9;
+            padding: 0.2rem 0.8rem;
+            border-radius: 100px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-pending {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+        .status-confirmed {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .status-completed {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .empty-state {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 1rem 0;
+        }
+
+        /* ---- RESPONSIVE ---- */
+        @media (max-width: 850px) {
+            .app {
+                grid-template-columns: 1fr;
+                border-radius: 1.5rem;
+            }
+            .hero-panel {
+                padding: 2rem;
+                border-radius: 1.5rem 1.5rem 0 0;
+            }
+            .hero-panel .benefits {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 0.5rem 1.5rem;
+            }
+            .hero-panel .benefits li {
+                font-size: 0.9rem;
+            }
+            .form-panel {
+                padding: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .row-2 {
+                grid-template-columns: 1fr;
+            }
+            .booking-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f172a;
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 100px;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            z-index: 999;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        .toast.error {
+            background: #dc2626;
+        }
+        .toast.success {
+            background: #16a34a;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app">
+        <!-- LEFT PANEL – Branding -->
+        <div class="hero-panel">
+            <div>
+                <div class="logo">❄️ <span>ChillBox</span></div>
+                <div class="tagline">Mobile fridge &amp; freezer rentals — delivered to your doorstep.</div>
+                <ul class="benefits">
+                    <li>Same-day delivery within 25 km</li>
+                    <li>Commercial-grade cooling</li>
+                    <li>Free pickup &amp; sanitization</li>
+                </ul>
+            </div>
+            <div class="footer-note">
+                📍 Serving Cape Town &amp; surrounds.<br />
+                Book 24 hours in advance for guaranteed availability.
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL – Form + Dashboard -->
+        <div class="form-panel">
+            <h2>📅 Book your fridge</h2>
+            <p class="sub">Fill in the details and we'll confirm within 2 hours.</p>
+
+            <form id="bookingForm">
+                <div class="form-group">
+                    <label for="name">Full name *</label>
+                    <input type="text" id="name" placeholder="e.g. Sarah Johnson" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone number *</label>
+                    <input type="tel" id="phone" placeholder="e.g. 082 123 4567" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Delivery address</label>
+                    <input type="text" id="address" placeholder="Street, suburb, landmark" />
+                </div>
+
+                <div class="row-2">
+                    <div class="form-group">
+                        <label for="date">Date *</label>
+                        <input type="date" id="date" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="time">Time *</label>
+                        <input type="time" id="time" required />
+                    </div>
+                </div>
+
+                <div class="row-2">
+                    <div class="form-group">
+                        <label for="service">Service *</label>
+                        <select id="service" required>
+                            <option value="">Select...</option>
+                            <option value="Fridge Rental (100L)">Fridge Rental (100L) – R250/day</option>
+                            <option value="Freezer Rental (80L)">Freezer Rental (80L) – R300/day</option>
+                            <option value="Fridge + Freezer Combo">Fridge + Freezer Combo – R450/day</option>
+                            <option value="Ice Supply (20kg bag)">Ice Supply (20kg bag) – R80/bag</option>
+                            <option value="Full Event Package">Full Event Package – R800/day</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="duration">Duration</label>
+                        <select id="duration">
+                            <option value="1 day">1 day</option>
+                            <option value="2 days">2 days</option>
+                            <option value="3 days">3 days</option>
+                            <option value="1 week">1 week</option>
+                            <option value="Custom (in notes)">Custom (in notes)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Special requests / notes</label>
+                    <textarea id="notes" placeholder="E.g. need power extension cord, ground floor only, etc."></textarea>
+                </div>
+
+                <button type="submit" class="btn-book">❄️ Book Now</button>
+            </form>
+
+            <!-- Dashboard: My Bookings -->
+            <div class="dashboard">
+                <h3>📋 My Bookings</h3>
+                <div id="bookingList" class="booking-list">
+                    <div class="empty-state">You have no bookings yet. Book your first fridge!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // ---------- DOM refs ----------
+        const form = document.getElementById('bookingForm');
+        const listEl = document.getElementById('bookingList');
+        const toast = document.getElementById('toast');
+
+        // ---------- Helpers ----------
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = 'toast ' + type + ' show';
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => toast.classList.remove('show'), 4000);
+        }
+
+        // ---------- Fetch & render bookings ----------
+        async function loadBookings() {
+            try {
+                const res = await fetch('/api/bookings');
+                if (!res.ok) throw new Error('Failed to load bookings');
+                const bookings = await res.json();
+
+                if (bookings.length === 0) {
+                    listEl.innerHTML = `<div class="empty-state">No bookings yet. Book your first fridge!</div>`;
+                    return;
+                }
+
+                // Show latest first
+                const sorted = bookings.slice().reverse();
+                listEl.innerHTML = sorted.map(b => {
+                    const statusClass = `status-${b.status}`;
+                    return `
+                        <div class="booking-item">
+                            <div class="info">
+                                <strong>${b.name}</strong>
+                                <span>📅 ${b.date} at ${b.time}</span>
+                                <span>❄️ ${b.service}</span>
+                            </div>
+                            <span class="status ${statusClass}">${b.status}</span>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error(err);
+                listEl.innerHTML = `<div class="empty-state" style="color:#dc2626;">⚠️ Could not load bookings. Is the server running?</div>`;
+            }
+        }
+
+        // ---------- Submit new booking ----------
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
+            const service = document.getElementById('service').value;
+            const duration = document.getElementById('duration').value;
+            const notes = document.getElementById('notes').value.trim();
+
+            // Basic validation
+            if (!name || !phone || !date || !time || !service) {
+                showToast('Please fill in all required fields (*)', 'error');
+                return;
+            }
+
+            // Check if date is in the past
+            const today = new Date().toISOString().split('T')[0];
+            if (date < today) {
+                showToast('You cannot book a past date. Please choose today or later.', 'error');
+                return;
+            }
+
+            const payload = { name, phone, address, date, time, service, duration, notes };
+
+            try {
+                const res = await fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showToast(data.error || 'Something went wrong.', 'error');
+                    return;
+                }
+
+                showToast('✅ Booking confirmed! We\'ll call you within 2 hours.', 'success');
+                form.reset();
+                // Set default date to tomorrow so they don't have to re-select
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                document.getElementById('date').value = tomorrow.toISOString().split('T')[0];
+                loadBookings(); // refresh dashboard
+
+            } catch (err) {
+                showToast('⚠️ Network error. Is the server running?', 'error');
+                console.error(err);
+            }
+        });
+
+        // ---------- Set default date to tomorrow ----------
+        (function setDefaultDate() {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dateInput = document.getElementById('date');
+            dateInput.value = tomorrow.toISOString().split('T')[0];
+            dateInput.min = new Date().toISOString().split('T')[0];
+        })();
+
+        // ---------- Initial load ----------
+        loadBookings();
+
+        // Refresh bookings every 30 seconds (in case admin updates status)
+        setInterval(loadBookings, 30000);
+    </script>
+
+</body>
+</html>
