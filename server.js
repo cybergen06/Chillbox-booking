@@ -1,17 +1,30 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
 const app = express();
 
 app.use(express.json());
 app.use(express.static('public'));
 
 // ----- MONGODB CONNECTION -----
-// PASTE YOUR CONNECTION STRING HERE (replace <password> with your real password)
 const MONGO_URI = 'mongodb+srv://admin:nthavela202_db_user@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority';
 
 mongoose.connect(MONGO_URI, { dbName: 'chillbox' })
     .then(() => console.log('✅ Connected to MongoDB Atlas!'))
     .catch(err => console.error('❌ MongoDB connection error:', err));
+
+// ----- EMAIL CONFIGURATION -----
+// Replace these with your Gmail details
+const EMAIL_USER = 'nthavela202@gmail.com';
+const EMAIL_PASS = 'anmm vmpg lfmo cjly'; // NOT your regular Gmail password!
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: EMAIL_USER,
+        pass: EMAIL_PASS
+    }
+});
 
 // ----- MONGODB SCHEMA & MODEL -----
 const bookingSchema = new mongoose.Schema({
@@ -42,7 +55,7 @@ app.get('/api/bookings', async (req, res) => {
     }
 });
 
-// 2. Create a new booking
+// 2. Create a new booking (with email notification!)
 app.post('/api/bookings', async (req, res) => {
     const { name, phone, address, date, time, service, duration, notes } = req.body;
 
@@ -73,9 +86,35 @@ app.post('/api/bookings', async (req, res) => {
 
         await newBooking.save();
         console.log(`📩 NEW BOOKING: ${name} - ${service} on ${date} at ${time}`);
+
+        // ----- SEND EMAIL NOTIFICATION -----
+        const emailHtml = `
+            <h2>❄️ New ChillBox Booking!</h2>
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Phone:</strong> ${phone}</p>
+            <p><strong>Address:</strong> ${address}</p>
+            <p><strong>Date:</strong> ${date}</p>
+            <p><strong>Time:</strong> ${time}</p>
+            <p><strong>Service:</strong> ${service}</p>
+            <p><strong>Duration:</strong> ${duration}</p>
+            <p><strong>Notes:</strong> ${notes || 'None'}</p>
+            <hr>
+            <p>Log in to your admin dashboard to confirm this booking.</p>
+        `;
+
+        await transporter.sendMail({
+            from: `"ChillBox Bookings" <${EMAIL_USER}>`,
+            to: EMAIL_USER, // Send to yourself (or add multiple: 'you@gmail.com, partner@gmail.com')
+            subject: `❄️ New Booking: ${name} - ${service}`,
+            html: emailHtml
+        });
+
+        console.log('📧 Email notification sent!');
+
         res.status(201).json({ message: 'Booking created!', booking: newBooking });
 
     } catch (err) {
+        console.error('Error:', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -99,6 +138,7 @@ app.put('/api/bookings/:id', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`❄️ ChillBox server running at http://localhost:3000`);
+    console.log(`❄️ ChillBox server running at http://localhost:${PORT}`);
     console.log(`📦 Bookings saved to MongoDB Atlas!`);
+    console.log(`📧 Email notifications enabled!`);
 });
