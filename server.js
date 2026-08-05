@@ -7,7 +7,7 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // ----- MONGODB CONNECTION -----
-const MONGO_URI ='mongodb+srv://:<nthavela2021-2006>@cluster0.mkgprc7.mongodb.net/?appName=Cluster0';
+const MONGO_URI ='mongodb+srv://nthavela202_db_user:<nthavela2021-2006>@cluster0.mkgprc7.mongodb.net/?appName=Cluster0';
 
 mongoose.connect(MONGO_URI, { dbName: 'chillbox' })
     .then(() => console.log('✅ Connected to MongoDB Atlas!'))
